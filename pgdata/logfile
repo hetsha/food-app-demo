@@ -1,0 +1,184 @@
+2026-09-07 14:03:34.920 IST [27944] LOG:  starting PostgreSQL 15.19, compiled by Visual C++ build 1944, 64-bit
+2026-09-07 14:03:34.931 IST [27944] LOG:  listening on IPv6 address "::1", port 5432
+2026-09-07 14:03:34.932 IST [27944] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2026-09-07 14:03:35.023 IST [28476] LOG:  database system was shut down at 2026-09-07 14:03:24 IST
+2026-09-07 14:03:35.057 IST [27944] LOG:  database system is ready to accept connections
+2026-09-07 14:08:35.022 IST [38400] LOG:  checkpoint starting: time
+2026-09-07 14:08:39.329 IST [38400] LOG:  checkpoint complete: wrote 43 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=4.244 s, sync=0.036 s, total=4.307 s; sync files=11, longest=0.008 s, average=0.004 s; distance=252 kB, estimate=252 kB
+2026-09-07 15:10:35.194 IST [31064] ERROR:  relation "_prisma_migrations" does not exist at character 126
+2026-09-07 15:10:35.194 IST [31064] STATEMENT:  SELECT "id", "checksum", "finished_at", "migration_name", "logs", "rolled_back_at", "started_at", "applied_steps_count" FROM "_prisma_migrations" ORDER BY "started_at" ASC
+2026-09-07 15:10:35.651 IST [38400] LOG:  checkpoint starting: immediate force wait
+2026-09-07 15:10:36.884 IST [38400] LOG:  checkpoint complete: wrote 925 buffers (5.6%); 1 WAL file(s) added, 0 removed, 0 recycled; write=0.028 s, sync=1.038 s, total=1.233 s; sync files=300, longest=0.032 s, average=0.004 s; distance=8449 kB, estimate=8449 kB
+2026-09-07 15:10:37.662 IST [38400] LOG:  checkpoint starting: immediate force wait
+2026-09-07 15:10:37.766 IST [38400] LOG:  checkpoint complete: wrote 7 buffers (0.0%); 0 WAL file(s) added, 0 removed, 1 recycled; write=0.006 s, sync=0.019 s, total=0.104 s; sync files=5, longest=0.009 s, average=0.004 s; distance=4240 kB, estimate=8028 kB
+2026-09-07 15:10:38.569 IST [38400] LOG:  checkpoint starting: immediate force wait
+2026-09-07 15:10:38.749 IST [38400] LOG:  checkpoint complete: wrote 48 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.028 s, sync=0.112 s, total=0.180 s; sync files=41, longest=0.008 s, average=0.003 s; distance=4378 kB, estimate=7663 kB
+2026-09-07 15:10:40.277 IST [38400] LOG:  checkpoint starting: immediate force wait
+2026-09-07 15:10:40.336 IST [38400] LOG:  checkpoint complete: wrote 4 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=0.014 s, total=0.059 s; sync files=4, longest=0.005 s, average=0.004 s; distance=4226 kB, estimate=7320 kB
+2026-09-07 15:10:41.853 IST [31064] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-07 15:15:40.350 IST [38400] LOG:  checkpoint starting: time
+2026-09-07 15:15:59.165 IST [38400] LOG:  checkpoint complete: wrote 174 buffers (1.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=18.599 s, sync=0.197 s, total=18.815 s; sync files=195, longest=0.028 s, average=0.002 s; distance=1175 kB, estimate=6705 kB
+2026-09-07 15:16:33.577 IST [40232] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-07 15:17:27.926 IST [41156] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-07 15:20:40.182 IST [38400] LOG:  checkpoint starting: time
+2026-09-07 15:20:40.654 IST [38400] LOG:  checkpoint complete: wrote 4 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.417 s, sync=0.015 s, total=0.473 s; sync files=1, longest=0.015 s, average=0.015 s; distance=1 kB, estimate=6035 kB
+2026-09-07 15:28:02.374 IST [34416] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-07 15:28:52.004 IST [39516] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-07 15:30:40.667 IST [38400] LOG:  checkpoint starting: time
+2026-09-07 15:30:40.919 IST [38400] LOG:  checkpoint complete: wrote 2 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.207 s, sync=0.015 s, total=0.253 s; sync files=2, longest=0.010 s, average=0.008 s; distance=7 kB, estimate=5432 kB
+2026-09-07 15:34:37.443 IST [34416] ERROR:  invalid byte sequence for encoding "UTF8": 0x82
+2026-09-07 15:34:37.443 IST [34416] STATEMENT:  UPDATE settings SET value=E'{" hash\:\ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f\,\expiresAt\:\2026-12-31T23:59:59.000Z\,\attempts\:0,\createdAt\:\2026-09-07T10:00:00.000Z\}'
+2026-09-07 15:34:46.438 IST [19772] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-07 15:35:40.929 IST [38400] LOG:  checkpoint starting: time
+2026-09-07 15:35:43.808 IST [38400] LOG:  checkpoint complete: wrote 27 buffers (0.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.796 s, sync=0.058 s, total=2.879 s; sync files=18, longest=0.009 s, average=0.004 s; distance=11 kB, estimate=4890 kB
+2026-09-07 15:40:40.812 IST [38400] LOG:  checkpoint starting: time
+2026-09-07 15:40:42.153 IST [38400] LOG:  checkpoint complete: wrote 13 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=1.275 s, sync=0.038 s, total=1.342 s; sync files=13, longest=0.008 s, average=0.003 s; distance=10 kB, estimate=4402 kB
+2026-09-07 15:45:40.163 IST [38400] LOG:  checkpoint starting: time
+2026-09-07 15:45:43.026 IST [38400] LOG:  checkpoint complete: wrote 27 buffers (0.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.780 s, sync=0.058 s, total=2.863 s; sync files=18, longest=0.010 s, average=0.004 s; distance=81 kB, estimate=3970 kB
+2026-09-07 15:49:18.287 IST [42868] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-07 15:49:47.113 IST [31156] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-07 15:50:40.042 IST [38400] LOG:  checkpoint starting: time
+2026-09-07 15:50:41.416 IST [38400] LOG:  checkpoint complete: wrote 13 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=1.314 s, sync=0.039 s, total=1.375 s; sync files=13, longest=0.010 s, average=0.003 s; distance=19 kB, estimate=3575 kB
+2026-09-07 15:51:27.818 IST [41848] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-07 15:52:27.288 IST [35080] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-07 15:53:00.008 IST [10348] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-07 15:55:40.424 IST [38400] LOG:  checkpoint starting: time
+2026-09-07 15:55:44.153 IST [38400] LOG:  checkpoint complete: wrote 35 buffers (0.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=3.627 s, sync=0.076 s, total=3.729 s; sync files=24, longest=0.009 s, average=0.004 s; distance=144 kB, estimate=3232 kB
+2026-09-07 16:00:40.161 IST [38400] LOG:  checkpoint starting: time
+2026-09-07 16:00:42.504 IST [38400] LOG:  checkpoint complete: wrote 22 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.253 s, sync=0.058 s, total=2.344 s; sync files=20, longest=0.009 s, average=0.003 s; distance=72 kB, estimate=2916 kB
+2026-09-07 16:04:26.344 IST [18952] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-07 16:10:40.514 IST [38400] LOG:  checkpoint starting: time
+2026-09-07 16:10:45.039 IST [38400] LOG:  checkpoint complete: wrote 42 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=4.447 s, sync=0.059 s, total=4.526 s; sync files=27, longest=0.008 s, average=0.003 s; distance=32 kB, estimate=2627 kB
+2026-09-07 16:20:40.059 IST [38400] LOG:  checkpoint starting: time
+2026-09-07 16:20:42.205 IST [38400] LOG:  checkpoint complete: wrote 20 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.049 s, sync=0.072 s, total=2.146 s; sync files=20, longest=0.008 s, average=0.004 s; distance=15 kB, estimate=2366 kB
+2026-09-07 16:25:06.274 IST [29628] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-07 16:27:32.247 IST [5768] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-07 16:30:40.222 IST [38400] LOG:  checkpoint starting: time
+2026-09-07 16:30:43.624 IST [38400] LOG:  checkpoint complete: wrote 32 buffers (0.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=3.303 s, sync=0.067 s, total=3.403 s; sync files=32, longest=0.008 s, average=0.003 s; distance=71 kB, estimate=2136 kB
+2026-09-07 20:06:04.315 IST [41972] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-07 20:22:00.486 IST [27944] LOG:  server process (PID 28376) was terminated by exception 0x40010004
+2026-09-07 20:22:00.486 IST [27944] DETAIL:  Failed process was running: SELECT "public"."categories"."id", "public"."categories"."name", "public"."categories"."icon", "public"."categories"."display_order", "public"."categories"."is_active", "public"."categories"."created_at" FROM "public"."categories" WHERE "public"."categories"."is_active" = $1 ORDER BY "public"."categories"."display_order" ASC OFFSET $2
+2026-09-07 20:22:00.486 IST [27944] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2026-09-07 20:22:00.486 IST [27944] LOG:  terminating any other active server processes
+2026-09-07 20:22:00.612 IST [27944] LOG:  all server processes terminated; reinitializing
+2026-09-07 20:22:00.714 IST [27944] LOG:  shutting down due to startup process failure
+2026-09-07 20:22:00.719 IST [27944] LOG:  database system is shut down
+2026-09-21 13:26:24.045 IST [10740] LOG:  starting PostgreSQL 15.19, compiled by Visual C++ build 1944, 64-bit
+2026-09-21 13:26:24.048 IST [10740] LOG:  listening on IPv6 address "::1", port 5432
+2026-09-21 13:26:24.049 IST [10740] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2026-09-21 13:26:24.093 IST [24632] LOG:  database system was interrupted; last known up at 2026-09-21 13:24:12 IST
+2026-09-21 13:26:29.472 IST [24632] LOG:  could not open file "./logfile": sharing violation
+2026-09-21 13:26:29.472 IST [24632] DETAIL:  Continuing to retry for 30 seconds.
+2026-09-21 13:26:29.472 IST [24632] HINT:  You might have antivirus, backup, or similar software interfering with the database system.
+2026-09-21 13:26:56.054 IST [24632] LOG:  syncing data directory (fsync), elapsed time: 31.96 s, current path: ./pg_commit_ts
+2026-09-21 13:26:56.061 IST [24632] LOG:  database system was not properly shut down; automatic recovery in progress
+2026-09-21 13:26:56.070 IST [24632] LOG:  invalid record length at 0/2BA3300: wanted 24, got 0
+2026-09-21 13:26:56.070 IST [24632] LOG:  redo is not required
+2026-09-21 13:26:56.079 IST [14604] LOG:  checkpoint starting: end-of-recovery immediate wait
+2026-09-21 13:26:56.102 IST [14604] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.008 s, total=0.031 s; sync files=2, longest=0.006 s, average=0.004 s; distance=0 kB, estimate=0 kB
+2026-09-21 13:26:56.115 IST [10740] LOG:  database system is ready to accept connections
+2026-09-23 12:16:42.792 IST [21092] LOG:  starting PostgreSQL 15.19, compiled by Visual C++ build 1944, 64-bit
+2026-09-23 12:16:42.797 IST [21092] LOG:  listening on IPv6 address "::1", port 5432
+2026-09-23 12:16:42.797 IST [21092] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2026-09-23 12:16:42.912 IST [20672] LOG:  database system was interrupted; last known up at 2026-09-22 19:44:48 IST
+2026-09-23 12:16:52.656 IST [20672] LOG:  could not open file "./logfile": sharing violation
+2026-09-23 12:16:52.656 IST [20672] DETAIL:  Continuing to retry for 30 seconds.
+2026-09-23 12:16:52.656 IST [20672] HINT:  You might have antivirus, backup, or similar software interfering with the database system.
+2026-09-23 12:17:19.139 IST [20672] LOG:  syncing data directory (fsync), elapsed time: 36.22 s, current path: ./pg_commit_ts
+2026-09-23 12:17:19.172 IST [20672] LOG:  database system was not properly shut down; automatic recovery in progress
+2026-09-23 12:17:19.182 IST [20672] LOG:  redo starts at 0/2C97938
+2026-09-23 12:17:19.182 IST [20672] LOG:  invalid record length at 0/2C97A20: wanted 24, got 0
+2026-09-23 12:17:19.182 IST [20672] LOG:  redo done at 0/2C979E8 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+2026-09-23 12:17:19.213 IST [20996] LOG:  checkpoint starting: end-of-recovery immediate wait
+2026-09-23 12:17:19.263 IST [20996] LOG:  checkpoint complete: wrote 2 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=0.017 s, total=0.059 s; sync files=3, longest=0.009 s, average=0.006 s; distance=0 kB, estimate=0 kB
+2026-09-23 12:17:19.309 IST [21092] LOG:  database system is ready to accept connections
+2026-09-23 13:12:19.356 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 13:12:20.068 IST [20996] LOG:  checkpoint complete: wrote 7 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.663 s, sync=0.019 s, total=0.712 s; sync files=5, longest=0.008 s, average=0.004 s; distance=21 kB, estimate=21 kB
+2026-09-23 13:17:19.069 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 13:17:20.440 IST [20996] LOG:  checkpoint complete: wrote 13 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=1.303 s, sync=0.042 s, total=1.372 s; sync files=13, longest=0.009 s, average=0.004 s; distance=36 kB, estimate=36 kB
+2026-09-23 13:22:19.443 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 13:22:22.194 IST [20996] LOG:  checkpoint complete: wrote 25 buffers (0.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.613 s, sync=0.109 s, total=2.751 s; sync files=25, longest=0.026 s, average=0.005 s; distance=21 kB, estimate=34 kB
+2026-09-23 13:32:19.200 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 13:32:21.933 IST [20996] LOG:  checkpoint complete: wrote 25 buffers (0.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.622 s, sync=0.083 s, total=2.734 s; sync files=25, longest=0.009 s, average=0.004 s; distance=45 kB, estimate=45 kB
+2026-09-23 13:37:19.944 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 13:37:23.019 IST [20996] LOG:  checkpoint complete: wrote 28 buffers (0.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.950 s, sync=0.092 s, total=3.076 s; sync files=28, longest=0.008 s, average=0.004 s; distance=52 kB, estimate=52 kB
+2026-09-23 13:42:19.027 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 13:42:19.741 IST [20996] LOG:  checkpoint complete: wrote 7 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.656 s, sync=0.025 s, total=0.715 s; sync files=6, longest=0.009 s, average=0.005 s; distance=12 kB, estimate=48 kB
+2026-09-23 13:47:19.746 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 13:47:19.902 IST [20996] LOG:  checkpoint complete: wrote 2 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.111 s, sync=0.012 s, total=0.156 s; sync files=2, longest=0.010 s, average=0.006 s; distance=4 kB, estimate=44 kB
+2026-09-23 13:52:19.916 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 13:52:22.551 IST [20996] LOG:  checkpoint complete: wrote 24 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.543 s, sync=0.065 s, total=2.636 s; sync files=23, longest=0.008 s, average=0.003 s; distance=40 kB, estimate=43 kB
+2026-09-23 14:02:19.577 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 14:02:19.845 IST [20996] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.221 s, sync=0.014 s, total=0.269 s; sync files=3, longest=0.008 s, average=0.005 s; distance=11 kB, estimate=40 kB
+2026-09-23 14:07:19.852 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 14:07:21.920 IST [20996] LOG:  checkpoint complete: wrote 19 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=1.967 s, sync=0.074 s, total=2.069 s; sync files=19, longest=0.008 s, average=0.004 s; distance=36 kB, estimate=40 kB
+2026-09-23 14:42:19.968 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 14:42:22.990 IST [20996] LOG:  checkpoint complete: wrote 30 buffers (0.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.915 s, sync=0.066 s, total=3.023 s; sync files=26, longest=0.008 s, average=0.003 s; distance=46 kB, estimate=46 kB
+2026-09-23 15:02:20.015 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 15:02:20.721 IST [20996] LOG:  checkpoint complete: wrote 9 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.643 s, sync=0.035 s, total=0.707 s; sync files=8, longest=0.008 s, average=0.005 s; distance=21 kB, estimate=44 kB
+2026-09-23 15:27:20.775 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 15:27:23.939 IST [20996] LOG:  checkpoint complete: wrote 29 buffers (0.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=3.067 s, sync=0.070 s, total=3.164 s; sync files=28, longest=0.008 s, average=0.003 s; distance=53 kB, estimate=53 kB
+2026-09-23 15:32:20.946 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 15:32:22.442 IST [20996] LOG:  checkpoint complete: wrote 14 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=1.413 s, sync=0.049 s, total=1.497 s; sync files=14, longest=0.009 s, average=0.004 s; distance=10 kB, estimate=49 kB
+2026-09-23 15:37:20.443 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 15:37:21.030 IST [20996] LOG:  checkpoint complete: wrote 6 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.541 s, sync=0.021 s, total=0.587 s; sync files=6, longest=0.009 s, average=0.004 s; distance=9 kB, estimate=45 kB
+2026-09-23 15:47:20.046 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 15:47:20.640 IST [20996] LOG:  checkpoint complete: wrote 6 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.542 s, sync=0.025 s, total=0.594 s; sync files=6, longest=0.008 s, average=0.005 s; distance=14 kB, estimate=42 kB
+2026-09-23 16:05:48.698 IST [20040] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-23 16:05:48.795 IST [21688] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-09-23 16:22:20.700 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 16:22:22.410 IST [20996] LOG:  checkpoint complete: wrote 16 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=1.628 s, sync=0.051 s, total=1.710 s; sync files=16, longest=0.011 s, average=0.004 s; distance=30 kB, estimate=40 kB
+2026-09-23 16:37:20.428 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 16:37:21.047 IST [20996] LOG:  checkpoint complete: wrote 6 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.539 s, sync=0.041 s, total=0.619 s; sync files=6, longest=0.016 s, average=0.007 s; distance=3 kB, estimate=37 kB
+2026-09-23 16:42:20.055 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 16:42:21.538 IST [20996] LOG:  checkpoint complete: wrote 14 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=1.413 s, sync=0.044 s, total=1.484 s; sync files=14, longest=0.008 s, average=0.004 s; distance=27 kB, estimate=36 kB
+2026-09-23 16:47:20.542 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 16:47:21.017 IST [20996] LOG:  checkpoint complete: wrote 5 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.430 s, sync=0.020 s, total=0.475 s; sync files=5, longest=0.007 s, average=0.004 s; distance=4 kB, estimate=32 kB
+2026-09-23 17:02:20.044 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 17:02:20.778 IST [20996] LOG:  checkpoint complete: wrote 7 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.646 s, sync=0.031 s, total=0.735 s; sync files=7, longest=0.013 s, average=0.005 s; distance=16 kB, estimate=31 kB
+2026-09-23 17:17:20.808 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 17:17:21.616 IST [20996] LOG:  checkpoint complete: wrote 8 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.753 s, sync=0.027 s, total=0.809 s; sync files=8, longest=0.008 s, average=0.004 s; distance=24 kB, estimate=30 kB
+2026-09-23 17:32:20.641 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 17:32:21.133 IST [20996] LOG:  checkpoint complete: wrote 5 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.437 s, sync=0.021 s, total=0.492 s; sync files=5, longest=0.008 s, average=0.005 s; distance=4 kB, estimate=27 kB
+2026-09-23 17:42:20.140 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 17:42:20.763 IST [20996] LOG:  checkpoint complete: wrote 6 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.552 s, sync=0.029 s, total=0.623 s; sync files=6, longest=0.009 s, average=0.005 s; distance=16 kB, estimate=26 kB
+2026-09-23 18:07:20.824 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 18:07:21.662 IST [20996] LOG:  checkpoint complete: wrote 8 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.769 s, sync=0.048 s, total=0.838 s; sync files=8, longest=0.027 s, average=0.006 s; distance=26 kB, estimate=26 kB
+2026-09-23 18:17:20.672 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 18:17:22.943 IST [20996] LOG:  checkpoint complete: wrote 21 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.172 s, sync=0.066 s, total=2.271 s; sync files=21, longest=0.008 s, average=0.004 s; distance=27 kB, estimate=27 kB
+2026-09-23 18:22:20.953 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 18:22:24.762 IST [20996] LOG:  checkpoint complete: wrote 35 buffers (0.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=3.703 s, sync=0.079 s, total=3.809 s; sync files=26, longest=0.008 s, average=0.003 s; distance=83 kB, estimate=83 kB
+2026-09-23 18:47:20.797 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 18:47:21.410 IST [20996] LOG:  checkpoint complete: wrote 6 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.540 s, sync=0.034 s, total=0.614 s; sync files=6, longest=0.018 s, average=0.006 s; distance=17 kB, estimate=77 kB
+2026-09-23 18:52:20.411 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 18:52:22.921 IST [20996] LOG:  checkpoint complete: wrote 23 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.410 s, sync=0.073 s, total=2.511 s; sync files=22, longest=0.009 s, average=0.004 s; distance=26 kB, estimate=72 kB
+2026-09-23 19:22:20.972 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 19:22:21.582 IST [20996] LOG:  checkpoint complete: wrote 6 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.549 s, sync=0.030 s, total=0.610 s; sync files=6, longest=0.009 s, average=0.005 s; distance=18 kB, estimate=66 kB
+2026-09-23 19:37:20.607 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 19:37:21.101 IST [20996] LOG:  checkpoint complete: wrote 5 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.446 s, sync=0.022 s, total=0.495 s; sync files=5, longest=0.008 s, average=0.005 s; distance=2 kB, estimate=60 kB
+2026-09-23 19:47:20.115 IST [20996] LOG:  checkpoint starting: time
+2026-09-23 19:47:20.817 IST [20996] LOG:  checkpoint complete: wrote 7 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.649 s, sync=0.028 s, total=0.702 s; sync files=7, longest=0.008 s, average=0.004 s; distance=18 kB, estimate=56 kB
+2026-09-23 19:47:55.239 IST [21092] LOG:  server process (PID 21888) was terminated by exception 0x40010004
+2026-09-23 19:47:55.239 IST [21092] DETAIL:  Failed process was running: SELECT "public"."customization_groups"."id", "public"."customization_groups"."food_item_id", "public"."customization_groups"."name", "public"."customization_groups"."min_selections", "public"."customization_groups"."max_selections", "public"."customization_groups"."display_order", "public"."customization_groups"."created_at" FROM "public"."customization_groups" WHERE "public"."customization_groups"."food_item_id" IN ($1,$2,$3,$4,$5,$6,$7) ORDER BY "public"."customization_groups"."display_order" ASC OFFSET $8
+2026-09-23 19:47:55.239 IST [21092] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2026-09-23 19:47:55.239 IST [21092] LOG:  terminating any other active server processes
+2026-09-23 19:47:55.365 IST [21092] LOG:  all server processes terminated; reinitializing
+2026-09-23 19:47:55.522 IST [21092] LOG:  shutting down due to startup process failure
+2026-09-23 19:47:55.527 IST [21092] LOG:  database system is shut down

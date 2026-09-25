@@ -1,0 +1,16 @@
+export declare class CreateFoodDto {
+    categoryId: string;
+    name: string;
+    description?: string;
+    price: number;
+    originalPrice?: number;
+    imageUrls?: string[];
+    videoUrl?: string;
+    calories?: number;
+    preparationTimeMinutes?: number;
+    isVeg?: boolean;
+    isJainAvailable?: boolean;
+    isFastingFriendly?: boolean;
+    isBestseller?: boolean;
+    isHealthyPick?: boolean;
+}

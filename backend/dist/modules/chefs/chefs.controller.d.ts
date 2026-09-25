@@ -1,0 +1,140 @@
+import { ChefsService } from './chefs.service';
+export declare class ChefsController {
+    private chefsService;
+    constructor(chefsService: ChefsService);
+    getDashboard(req: any): Promise<{
+        totalOrders: number;
+        preparingOrders: number;
+        readyOrders: number;
+    }>;
+    getOrders(req: any, status?: string): Promise<({
+        user: {
+            id: string;
+            phoneNumber: string;
+            fullName: string | null;
+        };
+        items: ({
+            foodItem: {
+                name: string;
+                id: string;
+                imageUrls: import("@prisma/client/runtime/library").JsonValue;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            foodItemId: string;
+            quantity: number;
+            unitPrice: import("@prisma/client/runtime/library").Decimal;
+            orderId: string;
+        })[];
+    } & {
+        deliverySlot: string;
+        updatedAt: Date;
+        id: string;
+        createdAt: Date;
+        userId: string;
+        specialInstructions: string | null;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
+        paymentReferenceId: string | null;
+        itemTotal: import("@prisma/client/runtime/library").Decimal;
+        taxAmount: import("@prisma/client/runtime/library").Decimal;
+        deliveryFee: import("@prisma/client/runtime/library").Decimal;
+        platformFee: import("@prisma/client/runtime/library").Decimal;
+        discountAmount: import("@prisma/client/runtime/library").Decimal;
+        grandTotal: import("@prisma/client/runtime/library").Decimal;
+        otpCode: string;
+        addressId: string | null;
+        chefId: string | null;
+        deliveryBoyId: string | null;
+    })[]>;
+    acceptOrder(orderId: string, req: any): Promise<{
+        deliverySlot: string;
+        updatedAt: Date;
+        id: string;
+        createdAt: Date;
+        userId: string;
+        specialInstructions: string | null;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
+        paymentReferenceId: string | null;
+        itemTotal: import("@prisma/client/runtime/library").Decimal;
+        taxAmount: import("@prisma/client/runtime/library").Decimal;
+        deliveryFee: import("@prisma/client/runtime/library").Decimal;
+        platformFee: import("@prisma/client/runtime/library").Decimal;
+        discountAmount: import("@prisma/client/runtime/library").Decimal;
+        grandTotal: import("@prisma/client/runtime/library").Decimal;
+        otpCode: string;
+        addressId: string | null;
+        chefId: string | null;
+        deliveryBoyId: string | null;
+    }>;
+    startPreparing(orderId: string): Promise<{
+        deliverySlot: string;
+        updatedAt: Date;
+        id: string;
+        createdAt: Date;
+        userId: string;
+        specialInstructions: string | null;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
+        paymentReferenceId: string | null;
+        itemTotal: import("@prisma/client/runtime/library").Decimal;
+        taxAmount: import("@prisma/client/runtime/library").Decimal;
+        deliveryFee: import("@prisma/client/runtime/library").Decimal;
+        platformFee: import("@prisma/client/runtime/library").Decimal;
+        discountAmount: import("@prisma/client/runtime/library").Decimal;
+        grandTotal: import("@prisma/client/runtime/library").Decimal;
+        otpCode: string;
+        addressId: string | null;
+        chefId: string | null;
+        deliveryBoyId: string | null;
+    }>;
+    markReady(orderId: string): Promise<{
+        deliverySlot: string;
+        updatedAt: Date;
+        id: string;
+        createdAt: Date;
+        userId: string;
+        specialInstructions: string | null;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
+        paymentReferenceId: string | null;
+        itemTotal: import("@prisma/client/runtime/library").Decimal;
+        taxAmount: import("@prisma/client/runtime/library").Decimal;
+        deliveryFee: import("@prisma/client/runtime/library").Decimal;
+        platformFee: import("@prisma/client/runtime/library").Decimal;
+        discountAmount: import("@prisma/client/runtime/library").Decimal;
+        grandTotal: import("@prisma/client/runtime/library").Decimal;
+        otpCode: string;
+        addressId: string | null;
+        chefId: string | null;
+        deliveryBoyId: string | null;
+    }>;
+    toggleStock(foodItemId: string): Promise<{
+        description: string | null;
+        name: string;
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+        deletedAt: Date | null;
+        categoryId: string;
+        isVeg: boolean;
+        isJainAvailable: boolean;
+        isFastingFriendly: boolean;
+        isBestseller: boolean;
+        isHealthyPick: boolean;
+        price: import("@prisma/client/runtime/library").Decimal;
+        originalPrice: import("@prisma/client/runtime/library").Decimal | null;
+        imageUrls: import("@prisma/client/runtime/library").JsonValue;
+        videoUrl: string | null;
+        calories: number | null;
+        preparationTimeMinutes: number;
+        rating: import("@prisma/client/runtime/library").Decimal;
+        reviewsCount: number;
+    }>;
+}

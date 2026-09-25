@@ -1,0 +1,337 @@
+import { PrismaService } from '../../config/prisma.service';
+export declare class FoodsService {
+    private prisma;
+    constructor(prisma: PrismaService);
+    findAll(params: {
+        skip?: number;
+        take?: number;
+        categoryId?: string;
+        search?: string;
+        isVeg?: boolean;
+        isJainAvailable?: boolean;
+        isFastingFriendly?: boolean;
+        isBestseller?: boolean;
+        isHealthyPick?: boolean;
+        minPrice?: number;
+        maxPrice?: number;
+        includeInactive?: boolean;
+    }): Promise<{
+        price: number;
+        originalPrice: number | null;
+        rating: number;
+        customizationGroups: {
+            items: {
+                additionalPrice: number;
+                name: string;
+                id: string;
+                isActive: boolean;
+                displayOrder: number;
+                groupId: string;
+            }[];
+            name: string;
+            id: string;
+            createdAt: Date;
+            displayOrder: number;
+            foodItemId: string;
+            minSelections: number;
+            maxSelections: number;
+        }[];
+        category: {
+            name: string;
+            id: string;
+            icon: string;
+        };
+        description: string | null;
+        name: string;
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+        deletedAt: Date | null;
+        categoryId: string;
+        isVeg: boolean;
+        isJainAvailable: boolean;
+        isFastingFriendly: boolean;
+        isBestseller: boolean;
+        isHealthyPick: boolean;
+        imageUrls: import("@prisma/client/runtime/library").JsonValue;
+        videoUrl: string | null;
+        calories: number | null;
+        preparationTimeMinutes: number;
+        reviewsCount: number;
+    }[]>;
+    findSpecials(): Promise<{
+        price: number;
+        originalPrice: number | null;
+        rating: number;
+        customizationGroups: {
+            items: {
+                additionalPrice: number;
+                name: string;
+                id: string;
+                isActive: boolean;
+                displayOrder: number;
+                groupId: string;
+            }[];
+            name: string;
+            id: string;
+            createdAt: Date;
+            displayOrder: number;
+            foodItemId: string;
+            minSelections: number;
+            maxSelections: number;
+        }[];
+        category: {
+            name: string;
+            id: string;
+            icon: string;
+        };
+        description: string | null;
+        name: string;
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+        deletedAt: Date | null;
+        categoryId: string;
+        isVeg: boolean;
+        isJainAvailable: boolean;
+        isFastingFriendly: boolean;
+        isBestseller: boolean;
+        isHealthyPick: boolean;
+        imageUrls: import("@prisma/client/runtime/library").JsonValue;
+        videoUrl: string | null;
+        calories: number | null;
+        preparationTimeMinutes: number;
+        reviewsCount: number;
+    }[]>;
+    findOne(id: string): Promise<{
+        price: number;
+        originalPrice: number | null;
+        rating: number;
+        customizationGroups: {
+            items: {
+                additionalPrice: number;
+                name: string;
+                id: string;
+                isActive: boolean;
+                displayOrder: number;
+                groupId: string;
+            }[];
+            name: string;
+            id: string;
+            createdAt: Date;
+            displayOrder: number;
+            foodItemId: string;
+            minSelections: number;
+            maxSelections: number;
+        }[];
+        category: {
+            name: string;
+            id: string;
+            icon: string;
+        };
+        description: string | null;
+        name: string;
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+        deletedAt: Date | null;
+        categoryId: string;
+        isVeg: boolean;
+        isJainAvailable: boolean;
+        isFastingFriendly: boolean;
+        isBestseller: boolean;
+        isHealthyPick: boolean;
+        imageUrls: import("@prisma/client/runtime/library").JsonValue;
+        videoUrl: string | null;
+        calories: number | null;
+        preparationTimeMinutes: number;
+        reviewsCount: number;
+    }>;
+    create(data: any): Promise<{
+        description: string | null;
+        name: string;
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+        deletedAt: Date | null;
+        categoryId: string;
+        isVeg: boolean;
+        isJainAvailable: boolean;
+        isFastingFriendly: boolean;
+        isBestseller: boolean;
+        isHealthyPick: boolean;
+        price: import("@prisma/client/runtime/library").Decimal;
+        originalPrice: import("@prisma/client/runtime/library").Decimal | null;
+        imageUrls: import("@prisma/client/runtime/library").JsonValue;
+        videoUrl: string | null;
+        calories: number | null;
+        preparationTimeMinutes: number;
+        rating: import("@prisma/client/runtime/library").Decimal;
+        reviewsCount: number;
+    }>;
+    update(id: string, data: any): Promise<{
+        description: string | null;
+        name: string;
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+        deletedAt: Date | null;
+        categoryId: string;
+        isVeg: boolean;
+        isJainAvailable: boolean;
+        isFastingFriendly: boolean;
+        isBestseller: boolean;
+        isHealthyPick: boolean;
+        price: import("@prisma/client/runtime/library").Decimal;
+        originalPrice: import("@prisma/client/runtime/library").Decimal | null;
+        imageUrls: import("@prisma/client/runtime/library").JsonValue;
+        videoUrl: string | null;
+        calories: number | null;
+        preparationTimeMinutes: number;
+        rating: import("@prisma/client/runtime/library").Decimal;
+        reviewsCount: number;
+    }>;
+    remove(id: string): Promise<{
+        description: string | null;
+        name: string;
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+        deletedAt: Date | null;
+        categoryId: string;
+        isVeg: boolean;
+        isJainAvailable: boolean;
+        isFastingFriendly: boolean;
+        isBestseller: boolean;
+        isHealthyPick: boolean;
+        price: import("@prisma/client/runtime/library").Decimal;
+        originalPrice: import("@prisma/client/runtime/library").Decimal | null;
+        imageUrls: import("@prisma/client/runtime/library").JsonValue;
+        videoUrl: string | null;
+        calories: number | null;
+        preparationTimeMinutes: number;
+        rating: import("@prisma/client/runtime/library").Decimal;
+        reviewsCount: number;
+    }>;
+    toggleActive(id: string): Promise<{
+        description: string | null;
+        name: string;
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+        deletedAt: Date | null;
+        categoryId: string;
+        isVeg: boolean;
+        isJainAvailable: boolean;
+        isFastingFriendly: boolean;
+        isBestseller: boolean;
+        isHealthyPick: boolean;
+        price: import("@prisma/client/runtime/library").Decimal;
+        originalPrice: import("@prisma/client/runtime/library").Decimal | null;
+        imageUrls: import("@prisma/client/runtime/library").JsonValue;
+        videoUrl: string | null;
+        calories: number | null;
+        preparationTimeMinutes: number;
+        rating: import("@prisma/client/runtime/library").Decimal;
+        reviewsCount: number;
+    }>;
+    toggleBestseller(id: string): Promise<{
+        description: string | null;
+        name: string;
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+        deletedAt: Date | null;
+        categoryId: string;
+        isVeg: boolean;
+        isJainAvailable: boolean;
+        isFastingFriendly: boolean;
+        isBestseller: boolean;
+        isHealthyPick: boolean;
+        price: import("@prisma/client/runtime/library").Decimal;
+        originalPrice: import("@prisma/client/runtime/library").Decimal | null;
+        imageUrls: import("@prisma/client/runtime/library").JsonValue;
+        videoUrl: string | null;
+        calories: number | null;
+        preparationTimeMinutes: number;
+        rating: import("@prisma/client/runtime/library").Decimal;
+        reviewsCount: number;
+    }>;
+    getCustomizationGroups(foodItemId: string): Promise<({
+        items: {
+            name: string;
+            id: string;
+            isActive: boolean;
+            displayOrder: number;
+            groupId: string;
+            additionalPrice: import("@prisma/client/runtime/library").Decimal;
+        }[];
+    } & {
+        name: string;
+        id: string;
+        createdAt: Date;
+        displayOrder: number;
+        foodItemId: string;
+        minSelections: number;
+        maxSelections: number;
+    })[]>;
+    createCustomizationGroup(foodItemId: string, data: {
+        name: string;
+        minSelections?: number;
+        maxSelections?: number;
+        displayOrder?: number;
+    }): Promise<{
+        name: string;
+        id: string;
+        createdAt: Date;
+        displayOrder: number;
+        foodItemId: string;
+        minSelections: number;
+        maxSelections: number;
+    }>;
+    updateCustomizationGroup(groupId: string, data: {
+        name?: string;
+        minSelections?: number;
+        maxSelections?: number;
+        displayOrder?: number;
+    }): Promise<{
+        name: string;
+        id: string;
+        createdAt: Date;
+        displayOrder: number;
+        foodItemId: string;
+        minSelections: number;
+        maxSelections: number;
+    }>;
+    deleteCustomizationGroup(groupId: string): Promise<{
+        message: string;
+    }>;
+    createCustomizationItem(groupId: string, data: {
+        name: string;
+        additionalPrice?: number;
+        displayOrder?: number;
+    }): Promise<{
+        name: string;
+        id: string;
+        isActive: boolean;
+        displayOrder: number;
+        groupId: string;
+        additionalPrice: import("@prisma/client/runtime/library").Decimal;
+    }>;
+    updateCustomizationItem(itemId: string, data: {
+        name?: string;
+        additionalPrice?: number;
+        isActive?: boolean;
+        displayOrder?: number;
+    }): Promise<{
+        name: string;
+        id: string;
+        isActive: boolean;
+        displayOrder: number;
+        groupId: string;
+        additionalPrice: import("@prisma/client/runtime/library").Decimal;
+    }>;
+    deleteCustomizationItem(itemId: string): Promise<{
+        message: string;
+    }>;
+}

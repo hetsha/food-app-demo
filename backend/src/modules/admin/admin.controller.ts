@@ -1,0 +1,77 @@
+import { Controller, Get, Patch, Param, Query, Body, UseGuards, Request } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { AdminService } from './admin.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../../guards/roles.decorator';
+import { UserRole } from '@prisma/client';
+
+@ApiTags('Admin')
+@Controller('admin')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.admin)
+@ApiBearerAuth()
+export class AdminController {
+  constructor(private adminService: AdminService) {}
+
+  @Get('dashboard')
+  @ApiOperation({ summary: 'Get admin dashboard stats' })
+  async getDashboard() {
+    return this.adminService.getDashboard();
+  }
+
+  @Get('dashboard/revenue')
+  @ApiOperation({ summary: 'Get revenue chart data' })
+  async getRevenue(@Query('days') days?: string) {
+    return this.adminService.getRevenueChart(days ? parseInt(days) : 7);
+  }
+
+  @Get('dashboard/orders-by-status')
+  @ApiOperation({ summary: 'Get orders count by status' })
+  async getOrdersByStatus() {
+    return this.adminService.getOrdersByStatus();
+  }
+
+  @Get('dashboard/top-dishes')
+  @ApiOperation({ summary: 'Get top selling dishes' })
+  async getTopDishes(@Query('limit') limit?: string) {
+    return this.adminService.getTopDishes(limit ? parseInt(limit) : 10);
+  }
+
+  @Get('dashboard/recent-orders')
+  @ApiOperation({ summary: 'Get recent orders' })
+  async getRecentOrders(@Query('limit') limit?: string) {
+    return this.adminService.getRecentOrders(limit ? parseInt(limit) : 5);
+  }
+
+  @Get('orders')
+  @ApiOperation({ summary: 'Get all orders (admin)' })
+  async getOrders(
+    @Query('skip') skip?: string,
+    @Query('take') take?: string,
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.adminService.getOrders({
+      skip: skip ? parseInt(skip) : 0,
+      take: take ? parseInt(take) : 20,
+      status,
+      search,
+    });
+  }
+
+  @Patch('orders/:orderId/status')
+  @ApiOperation({ summary: 'Update order status (admin)' })
+  async updateOrderStatus(@Param('orderId') orderId: string, @Body('status') status: string) {
+    return this.adminService.updateOrderStatus(orderId, status);
+  }
+
+  @Get('audit-logs')
+  @ApiOperation({ summary: 'Get audit logs (admin)' })
+  async getAuditLogs(@Query('skip') skip?: string, @Query('take') take?: string) {
+    return this.adminService.getAuditLogs({
+      skip: skip ? parseInt(skip) : 0,
+      take: take ? parseInt(take) : 20,
+    });
+  }
+}
