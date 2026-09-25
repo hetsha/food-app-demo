@@ -2,20 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'core/routes/app_router.dart';
+import 'core/storage/local_storage.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(
-    const ProviderScope(
-      child: AmboApp(),
-    ),
-  );
+  await LocalStorage.init();
+  runApp(const ProviderScope(child: ParabdiApp()));
 }
 
-class AmboApp extends ConsumerWidget {
-  const AmboApp({super.key});
+class ParabdiApp extends ConsumerWidget {
+  const ParabdiApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,7 +25,7 @@ class AmboApp extends ConsumerWidget {
       splitScreenMode: true,
       builder: (context, child) {
         return MaterialApp.router(
-          title: 'Ambo Cloud Kitchen',
+          title: 'Parabdi Cloud Kitchen',
           debugShowCheckedModeBanner: false,
           themeMode: themeMode,
           theme: AppTheme.lightTheme,

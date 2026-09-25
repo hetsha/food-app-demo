@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../core/constants/app_constants.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../address/data/models/address.dart';
+import '../../address/presentation/address_provider.dart';
+import '../../cart/presentation/cart_provider.dart';
+import 'avatar_provider.dart';
+import 'avatar_selector_sheet.dart';
+import 'home_provider.dart';
 
 class HomeTab extends ConsumerStatefulWidget {
   const HomeTab({super.key});
@@ -13,100 +20,165 @@ class HomeTab extends ConsumerStatefulWidget {
 }
 
 class _HomeTabState extends ConsumerState<HomeTab> {
-  String _selectedMealTime = 'Lunch'; // Breakfast, Lunch, Dinner
-  final List<String> _mealTimes = ['Breakfast', 'Lunch', 'Dinner'];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (ref.read(addressNotifierProvider).addresses.isEmpty &&
+          !ref.read(addressNotifierProvider).isLoading) {
+        ref.read(addressNotifierProvider.notifier).loadAddresses();
+      }
+    });
+  }
 
+  String _formatAddress(Address address) {
+    final parts = [
+      address.addressLine1,
+      if (address.addressLine2 != null && address.addressLine2!.isNotEmpty)
+        address.addressLine2!,
+      if (address.city != null && address.city!.isNotEmpty) address.city!,
+      if (address.postalCode.isNotEmpty) address.postalCode,
+    ];
+    return parts.join(', ');
+  }
   @override
   Widget build(BuildContext context) {
+    final homeState = ref.watch(homeProvider);
+    final cartState = ref.watch(cartProvider);
+    final cartCount = cartState.itemCount;
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.only(bottom: 120), // buffer for floating cart
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context),
-              _buildSearchBar(context),
-              _buildOfferCarousel(context),
-              _buildCategories(context),
-              _buildTodayMenuSection(context),
-              _buildChefSpecials(context),
-              _buildHealthyPicks(context),
-              _buildSubscriptionBanner(context),
-            ],
+        child: RefreshIndicator(
+          onRefresh: () => ref.read(homeProvider.notifier).refresh(),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(bottom: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(context, cartCount: cartCount),
+                _buildSearchBar(context),
+                if (homeState.isLoading)
+                  _buildLoadingShimmer(context)
+                else ...[
+                  _buildOfferCarousel(context, homeState),
+                  _buildCategories(context, homeState),
+                  _buildChefSpecials(context, homeState),
+                  _buildHealthyPicks(context, homeState),
+                ],
+                _buildSubscriptionBanner(context),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Future<void> _openAvatarSelector() async {
+    final picked = await AvatarSelectorSheet.show(
+      context,
+      selected: ref.read(avatarProvider),
+    );
+    if (picked == null) return;
+    await ref.read(avatarProvider.notifier).setAvatar(picked);
+  }
+
+  Widget _buildHeader(BuildContext context, {int cartCount = 0}) {
+    final avatarId = ref.watch(avatarProvider);
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.s24),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2),
-                  image: const DecorationImage(
-                    image: NetworkImage('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150'),
-                    fit: BoxFit.cover,
+          Expanded(
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: _openAvatarSelector,
+                  behavior: HitTestBehavior.opaque,
+                  child: Tooltip(
+                    message: 'Choose your avatar',
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.primary,
+                          width: 2,
+                        ),
+                      ),
+                      child: SvgPicture.asset(
+                        AvatarSelectorSheet.assetFor(avatarId),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.s12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(width: AppSpacing.s12),
+                Expanded(child: _buildLocationSection(context)),
+              ],
+            ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  Row(
-                    children: [
-                      Icon(Icons.location_on_rounded, size: 14, color: Theme.of(context).colorScheme.primary),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Home',
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                      const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
-                    ],
+                  IconButton(
+                    onPressed: () => context.push('/cart'),
+                    icon: const Icon(Icons.shopping_cart_outlined, size: 28),
+                    tooltip: 'Cart',
                   ),
-                  const SizedBox(height: 2),
-                  SizedBox(
-                    width: 160,
-                    child: Text(
-                      '501, Shilp Euphoria, Near Bopal Square...',
-                      style: Theme.of(context).textTheme.bodySmall,
-                      overflow: TextOverflow.ellipsis,
+                  if (cartCount > 0)
+                    Positioned(
+                      right: 4,
+                      top: 4,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 1.5),
+                        ),
+                        constraints: const BoxConstraints(minWidth: 18),
+                        child: Text(
+                          cartCount > 99 ? '99+' : '$cartCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            height: 1.2,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              Stack(
+                children: [
+                  IconButton(
+                    onPressed: () => _showNotificationsBottomSheet(context),
+                    icon: const Icon(Icons.notifications_outlined, size: 28),
+                  ),
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.accent,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                   ),
                 ],
-              ),
-            ],
-          ),
-          Stack(
-            children: [
-              IconButton(
-                onPressed: () => _showNotificationsBottomSheet(context),
-                icon: const Icon(Icons.notifications_outlined, size: 28),
-              ),
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.accent,
-                    shape: BoxShape.circle,
-                  ),
-                ),
               ),
             ],
           ),
@@ -115,14 +187,71 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     );
   }
 
+  Widget _buildLocationSection(BuildContext context) {
+    final addressState = ref.watch(addressNotifierProvider);
+    final selected = addressState.selectedAddress;
+
+    final String label;
+    final String addressLine;
+    if (addressState.isLoading && selected == null) {
+      label = 'Location';
+      addressLine = 'Finding your addresses...';
+    } else if (selected != null) {
+      label = selected.label;
+      addressLine = _formatAddress(selected);
+    } else if (addressState.errorMessage != null) {
+      label = 'Set location';
+      addressLine = 'Add your delivery address';
+    } else {
+      label = 'Set location';
+      addressLine = 'Add your delivery address';
+    }
+
+    return InkWell(
+      onTap: () => context.push('/location'),
+      borderRadius: BorderRadius.circular(AppRadius.r12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.location_on_rounded,
+                    size: 14, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelLarge
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              addressLine,
+              style: Theme.of(context).textTheme.bodySmall,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSearchBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24),
       child: GestureDetector(
-        onTap: () {
-          // Open quick filter/search sheet
-          _showSearchBottomSheet(context);
-        },
+        onTap: () => context.push('/search'),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: 14),
           decoration: BoxDecoration(
@@ -138,11 +267,17 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             children: [
               const Icon(Icons.search_rounded, color: Colors.grey),
               const SizedBox(width: AppSpacing.s12),
-              Text(
-                'Search delicious healthy food...',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+              Expanded(
+                child: Text(
+                  'Search delicious healthy food...',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(color: Colors.grey),
+                ),
               ),
-              const Spacer(),
               const Icon(Icons.tune_rounded, color: Colors.grey),
             ],
           ),
@@ -151,32 +286,35 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     );
   }
 
-  Widget _buildOfferCarousel(BuildContext context) {
+  Widget _buildOfferCarousel(BuildContext context, HomeState homeState) {
+    if (homeState.banners.isEmpty) return const SizedBox.shrink();
+
     return Container(
       height: 180,
       margin: const EdgeInsets.only(top: AppSpacing.s24),
       child: PageView.builder(
         controller: PageController(viewportFraction: 0.9),
-        itemCount: mockOffers.length,
+        itemCount: homeState.banners.length,
         itemBuilder: (context, index) {
-          final offer = mockOffers[index];
+          final banner = homeState.banners[index];
           return Card(
             margin: const EdgeInsets.symmetric(horizontal: 8),
             clipBehavior: Clip.antiAlias,
             child: Stack(
               children: [
-                CachedNetworkImage(
-                  imageUrl: offer.imageUrl,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  placeholder: (context, url) => Container(color: Colors.grey[300]),
-                  errorWidget: (context, url, error) => Container(color: Colors.grey[300]),
-                ),
+                if (banner.imageUrl != null)
+                  CachedNetworkImage(
+                    imageUrl: banner.imageUrl!,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    placeholder: (context, url) => Container(color: Colors.grey[300]),
+                    errorWidget: (context, url, error) => Container(color: Colors.grey[300]),
+                  ),
                 Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                      colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
                       begin: Alignment.bottomLeft,
                       end: Alignment.topRight,
                     ),
@@ -188,26 +326,14 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.accent,
-                          borderRadius: BorderRadius.circular(AppRadius.r12),
+                      if (banner.title != null)
+                        Text(
+                          banner.title!,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                        child: Text(
-                          offer.discountCode,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        offer.title,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w800),
-                      ),
-                      Text(
-                        offer.subtitle,
-                        style: const TextStyle(color: Colors.white70, fontSize: 13),
-                      ),
                     ],
                   ),
                 ),
@@ -219,7 +345,9 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     );
   }
 
-  Widget _buildCategories(BuildContext context) {
+  Widget _buildCategories(BuildContext context, HomeState homeState) {
+    if (homeState.categories.isEmpty) return const SizedBox.shrink();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -245,9 +373,9 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
-            itemCount: mockCategories.length,
+            itemCount: homeState.categories.length,
             itemBuilder: (context, index) {
-              final cat = mockCategories[index];
+              final cat = homeState.categories[index];
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Column(
@@ -260,11 +388,26 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                         shape: BoxShape.circle,
                         boxShadow: AppShadows.premiumShadow(),
                         border: Border.all(
-                          color: Theme.of(context).dividerColor.withOpacity(0.05),
+                          color: Theme.of(context).dividerColor.withValues(alpha: 0.05),
                         ),
                       ),
                       alignment: Alignment.center,
-                      child: Text(cat.icon, style: const TextStyle(fontSize: 24)),
+                      child: cat.icon != null
+                          ? Center(
+                              child: Text(cat.icon!, style: const TextStyle(fontSize: 28)),
+                            )
+                          : cat.imageUrl != null
+                              ? ClipOval(
+                                  child: CachedNetworkImage(
+                                    imageUrl: cat.imageUrl!,
+                                    width: 56,
+                                    height: 56,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) => const Icon(Icons.restaurant, size: 24),
+                                    errorWidget: (context, url, error) => const Icon(Icons.restaurant, size: 24),
+                                  ),
+                                )
+                              : const Icon(Icons.restaurant, size: 24),
                     ),
                     const SizedBox(height: 6),
                     Text(
@@ -281,162 +424,9 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     );
   }
 
-  Widget _buildTodayMenuSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: AppSpacing.s24, right: AppSpacing.s24, top: AppSpacing.s32),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Today's Menu",
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: _mealTimes.map((time) {
-                        final isSelected = _selectedMealTime == time;
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _selectedMealTime = time;
-                            });
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(left: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppColors.accent : Colors.transparent,
-                              borderRadius: BorderRadius.circular(AppRadius.r20),
-                            ),
-                            child: Text(
-                              time,
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.grey,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppSpacing.s16),
-        // Horizontal list of meals for the selection
-        SizedBox(
-          height: 250,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
-            itemCount: mockMeals.length,
-            itemBuilder: (context, index) {
-              final meal = mockMeals[index];
-              return Container(
-                width: 180,
-                margin: const EdgeInsets.symmetric(horizontal: 8),
-                child: Card(
-                  clipBehavior: Clip.antiAlias,
-                  child: InkWell(
-                    onTap: () => context.push('/meal/${meal.id}'),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Stack(
-                            children: [
-                              CachedNetworkImage(
-                                imageUrl: meal.imageUrl,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                placeholder: (context, url) => Container(color: Colors.grey[300]),
-                                errorWidget: (context, url, error) => Container(color: Colors.grey[300]),
-                              ),
-                              Positioned(
-                                top: 8,
-                                right: 8,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.9),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.star, color: Colors.amber, size: 12),
-                                      const SizedBox(width: 2),
-                                      Text(
-                                        meal.rating.toString(),
-                                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(AppSpacing.s12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                meal.name,
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Text(
-                                    '₹${meal.price.toStringAsFixed(0)}',
-                                    style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.primary),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    '₹${meal.originalPrice.toStringAsFixed(0)}',
-                                    style: const TextStyle(
-                                      decoration: TextDecoration.lineThrough,
-                                      color: Colors.grey,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
+  Widget _buildChefSpecials(BuildContext context, HomeState homeState) {
+    if (homeState.bestsellers.isEmpty) return const SizedBox.shrink();
 
-  Widget _buildChefSpecials(BuildContext context) {
-    final specials = mockMeals.where((m) => m.isBestSeller).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -452,9 +442,10 @@ class _HomeTabState extends ConsumerState<HomeTab> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24),
-          itemCount: specials.length,
+          itemCount: homeState.bestsellers.length,
           itemBuilder: (context, index) {
-            final meal = specials[index];
+            final meal = homeState.bestsellers[index];
+            final imageUrl = meal.imageUrls.isNotEmpty ? meal.imageUrls.first : '';
             return Card(
               margin: const EdgeInsets.only(bottom: AppSpacing.s16),
               child: InkWell(
@@ -466,49 +457,102 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(AppRadius.r16),
-                        child: CachedNetworkImage(
-                          imageUrl: meal.imageUrl,
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(color: Colors.grey[200]),
-                          errorWidget: (context, url, error) => Container(color: Colors.grey[200]),
-                        ),
+                        child: imageUrl.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                width: 80,
+                                height: 80,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(width: 80, height: 80, color: Colors.grey[200]),
+                                errorWidget: (context, url, error) => Container(
+                                  width: 80,
+                                  height: 80,
+                                  color: Colors.grey[200],
+                                  child: const Icon(Icons.restaurant),
+                                ),
+                              )
+                            : Container(
+                                width: 80,
+                                height: 80,
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.restaurant),
+                              ),
                       ),
                       const SizedBox(width: AppSpacing.s16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              meal.name,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              meal.description,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            const SizedBox(height: 8),
                             Row(
                               children: [
-                                Text('₹${meal.price.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w900)),
-                                const Spacer(),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    borderRadius: BorderRadius.circular(AppRadius.r12),
+                                if (meal.isVeg)
+                                  Container(
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: AppColors.success, width: 1.5),
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                    child: const Icon(Icons.circle, size: 6, color: AppColors.success),
+                                  )
+                                else
+                                  Container(
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: AppColors.error, width: 1.5),
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                    child: const Icon(Icons.square, size: 6, color: AppColors.error),
                                   ),
-                                  child: const Text(
-                                    'ADD',
-                                    style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    meal.name,
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 4),
+                            if (meal.rating != null)
+                              Row(
+                                children: [
+                                  const Icon(Icons.star, color: Colors.amber, size: 14),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    meal.rating!.toStringAsFixed(1),
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Text('₹${meal.price.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w900)),
+                                  const Spacer(),
+                                  InkWell(
+                                    onTap: () {
+                                      ref.read(cartProvider.notifier).addItem(
+                                            foodItemId: meal.id,
+                                            quantity: 1,
+                                          );
+                                    },
+                                    borderRadius: BorderRadius.circular(AppRadius.r12),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).colorScheme.primary,
+                                        borderRadius: BorderRadius.circular(AppRadius.r12),
+                                      ),
+                                      child: const Text(
+                                        'ADD',
+                                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                           ],
                         ),
                       ),
@@ -523,8 +567,9 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     );
   }
 
-  Widget _buildHealthyPicks(BuildContext context) {
-    final healthy = mockMeals.where((m) => m.isHealthyPick).toList();
+  Widget _buildHealthyPicks(BuildContext context, HomeState homeState) {
+    if (homeState.healthyPicks.isEmpty) return const SizedBox.shrink();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -537,16 +582,17 @@ class _HomeTabState extends ConsumerState<HomeTab> {
         ),
         const SizedBox(height: AppSpacing.s16),
         SizedBox(
-          height: 240,
+          height: 200,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
-            itemCount: healthy.length,
+            itemCount: homeState.healthyPicks.length,
             itemBuilder: (context, index) {
-              final meal = healthy[index];
+              final meal = homeState.healthyPicks[index];
+              final imageUrl = meal.imageUrls.isNotEmpty ? meal.imageUrls.first : '';
               return Container(
-                width: 220,
+                width: 180,
                 margin: const EdgeInsets.symmetric(horizontal: 8),
                 child: Card(
                   clipBehavior: Clip.antiAlias,
@@ -555,13 +601,22 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CachedNetworkImage(
-                          imageUrl: meal.imageUrl,
-                          height: 120,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(color: Colors.grey[300]),
-                          errorWidget: (context, url, error) => Container(color: Colors.grey[300]),
+                        Expanded(
+                          child: imageUrl.isNotEmpty
+                              ? CachedNetworkImage(
+                                  imageUrl: imageUrl,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(color: Colors.grey[300]),
+                                  errorWidget: (context, url, error) => Container(
+                                    color: Colors.grey[300],
+                                    child: const Icon(Icons.restaurant),
+                                  ),
+                                )
+                              : Container(
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.restaurant),
+                                ),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(AppSpacing.s12),
@@ -578,10 +633,17 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    '${meal.calories} kcal',
-                                    style: const TextStyle(color: AppColors.success, fontSize: 11, fontWeight: FontWeight.bold),
-                                  ),
+                                  if (meal.rating != null)
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.star, color: Colors.amber, size: 12),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          meal.rating!.toStringAsFixed(1),
+                                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
                                   Text(
                                     '₹${meal.price.toStringAsFixed(0)}',
                                     style: const TextStyle(fontWeight: FontWeight.w900),
@@ -626,7 +688,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 6),
-                 const Text(
+                const Text(
                   'Get organic meals delivered daily at up to 20% discount.',
                   style: TextStyle(color: Colors.white70, fontSize: 13),
                 ),
@@ -635,9 +697,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
           ),
           const SizedBox(width: AppSpacing.s16),
           ElevatedButton(
-            onPressed: () {
-              // Action to switch page index or similar, we can let user click
-            },
+            onPressed: () {},
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: AppColors.primary,
@@ -645,6 +705,92 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             ),
             child: const Text('View Plans', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingShimmer(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Banner shimmer
+          Container(
+            height: 180,
+            margin: const EdgeInsets.only(top: AppSpacing.s24),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              itemCount: 2,
+              itemBuilder: (context, index) => Container(
+                width: MediaQuery.of(context).size.width * 0.85,
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(AppRadius.r16),
+                ),
+              ),
+            ),
+          ),
+          // Categories shimmer
+          Padding(
+            padding: const EdgeInsets.only(left: AppSpacing.s24, right: AppSpacing.s24, top: AppSpacing.s32),
+            child: Container(
+              width: 200,
+              height: 24,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(
+            height: 90,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
+              itemCount: 6,
+              itemBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      width: 48,
+                      height: 12,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Food list shimmer
+          Padding(
+            padding: const EdgeInsets.only(left: AppSpacing.s24, right: AppSpacing.s24, top: AppSpacing.s32),
+            child: Container(
+              width: 180,
+              height: 24,
+              color: Colors.white,
+            ),
+          ),
+          ...List.generate(3, (index) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24, vertical: 8),
+            child: Container(
+              height: 104,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(AppRadius.r20),
+              ),
+            ),
+          )),
         ],
       ),
     );
@@ -671,76 +817,12 @@ class _HomeTabState extends ConsumerState<HomeTab> {
               ],
             ),
             const SizedBox(height: AppSpacing.s16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: mockNotifications.length,
-                itemBuilder: (context, index) {
-                  final notif = mockNotifications[index];
-                  return ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: CircleAvatar(
-                      backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                      child: Icon(
-                        notif.type == 'order' ? Icons.receipt : Icons.local_offer,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                    title: Text(notif.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    subtitle: Text(notif.body, style: const TextStyle(fontSize: 12)),
-                    trailing: Text('Just now', style: Theme.of(context).textTheme.bodySmall),
-                  );
-                },
+            const Expanded(
+              child: Center(
+                child: Text('No notifications yet'),
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  void _showSearchBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.85,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (context, scrollController) => Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.r24)),
-          ),
-          padding: const EdgeInsets.all(AppSpacing.s24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: 'Search for biryani, thali, kadhi...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.r12)),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s24),
-              Text('Trending Searches', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-              const SizedBox(height: AppSpacing.s12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  'Gujarati Thali', 'Paneer Sabzi', 'Rajma Chawal', 'Low Calorie', 'Kadhi Chawal'
-                ].map((term) => ActionChip(
-                  label: Text(term),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                )).toList(),
-              ),
-            ],
-          ),
         ),
       ),
     );

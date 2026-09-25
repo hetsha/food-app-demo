@@ -48,7 +48,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.2),
+                    color: AppColors.primary.withValues(alpha: 0.2),
                     blurRadius: 30,
                     spreadRadius: 10,
                   )
@@ -67,7 +67,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             const SizedBox(height: AppSpacing.s24),
             
             Text(
-              'Ambo',
+              'Parabdi',
               style: Theme.of(context).textTheme.displayMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w900,

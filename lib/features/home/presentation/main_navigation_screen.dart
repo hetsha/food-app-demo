@@ -3,8 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/storage/local_storage.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../address/presentation/address_provider.dart';
+import '../../address/data/services/device_location_service.dart';
 import '../../cart/presentation/cart_provider.dart';
+import '../../menu/presentation/menu_providers.dart';
+import '../../orders/presentation/providers/orders_provider.dart';
+import '../../subscription/presentation/subscription_provider.dart';
+import 'compact_cart_bar.dart';
+import 'home_provider.dart';
 import 'home_tab.dart';
 import '../../menu/presentation/menu_tab.dart';
 import '../../subscription/presentation/subscription_tab.dart';
@@ -30,92 +38,154 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _recoverTabIfNeeded(_currentIndex);
+      if (LocalStorage.getAccessToken() != null) {
+        ref.read(cartProvider.notifier).loadCart();
+        ref.read(addressNotifierProvider.notifier).loadAddresses();
+        DeviceLocationService.runLaunchLocationCheck(
+          showTurnOnLocationDialog: _showTurnOnLocationDialog,
+        );
+      }
+    });
+  }
+
+  /// Tabs live in an [IndexedStack], so they are built exactly once. If their
+  /// first load ran while the backend was unreachable, the failed/empty result
+  /// stayed cached forever (Menu showed "Failed to load foods", Home stayed
+  /// blank). Re-check whenever a tab becomes visible and reload only when
+  /// there is nothing to show.
+  void _recoverTabIfNeeded(int index) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      switch (index) {
+        case 0: // Home
+          final home = ref.read(homeProvider);
+          final empty = home.banners.isEmpty &&
+              home.categories.isEmpty &&
+              home.bestsellers.isEmpty &&
+              home.healthyPicks.isEmpty;
+          if (!home.isLoading && (home.errorMessage != null || empty)) {
+            ref.read(homeProvider.notifier).refresh();
+          }
+          break;
+        case 1: // Menu
+          if (ref.read(categoriesProvider).hasError) {
+            ref.invalidate(categoriesProvider);
+          }
+          final foods = ref.read(foodListProvider);
+          if (!foods.isLoading && foods.error != null) {
+            ref.read(foodListProvider.notifier).loadFoods();
+          }
+          break;
+        case 2: // Subscription
+          final sub = ref.read(subscriptionNotifierProvider);
+          if (!sub.isLoading && sub.plans.isEmpty) {
+            ref.read(subscriptionNotifierProvider.notifier).loadPlans();
+          }
+          break;
+        case 3: // Orders
+          final orders = ref.read(ordersProvider);
+          if (!orders.isLoading &&
+              (orders.errorMessage != null ||
+                  (orders.ongoingOrders.isEmpty &&
+                      orders.historyOrders.isEmpty))) {
+            ref.read(ordersProvider.notifier).loadOrders();
+          }
+          break;
+      }
+    });
+  }
+
+  void _onTabSelected(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    _recoverTabIfNeeded(index);
+  }
+
+  Future<bool> _showTurnOnLocationDialog() async {
+    if (!mounted) return false;
+    final enabled = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(
+          Icons.location_on_rounded,
+          color: AppColors.primary,
+          size: 40,
+        ),
+        title: const Text(
+          'Turn on location',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Parabdi uses your location to help select your delivery address.',
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Not now'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Enable Location'),
+          ),
+        ],
+      ),
+    );
+    if (enabled == true) {
+      await DeviceLocationService.openLocationSettings();
+      return true;
+    }
+    return false;
+  }
+
+  void _showCartError(String message) {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cartState = ref.watch(cartProvider);
 
+    // Errors only: success is communicated by the persistent compact
+    // cart bar itself, so no black/success snackbar is ever shown.
+    ref.listen(cartProvider, (previous, next) {
+      final finishedAdd = previous?.isAdding == true && !next.isAdding;
+      if (finishedAdd && next.error != null) {
+        _showCartError(next.error!);
+      }
+    });
+
+    final showCartBar = cartState.items.isNotEmpty && cartState.itemCount > 0;
+
     return Scaffold(
-      body: Stack(
-        children: [
-          IndexedStack(
-            index: _currentIndex,
-            children: _tabs,
-          ),
-          
-          // Floating Cart Banner when items exist
-          if (cartState.items.isNotEmpty)
-            Positioned(
-              left: AppSpacing.s16,
-              right: AppSpacing.s16,
-              bottom: kBottomNavigationBarHeight + AppSpacing.s32,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadius.r16),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s20, vertical: AppSpacing.s12),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.92),
-                      borderRadius: BorderRadius.circular(AppRadius.r16),
-                      boxShadow: AppShadows.premiumShadow(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '${cartState.items.fold(0, (sum, i) => sum + i.quantity)} Items • ₹${cartState.subtotal.toStringAsFixed(0)}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                              ),
-                            ),
-                            const Text(
-                              'Gourmet meals selected',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                        TextButton.icon(
-                          onPressed: () => context.push('/cart'),
-                          icon: const Icon(Icons.shopping_bag_outlined, color: Colors.white, size: 20),
-                          label: const Text(
-                            'View Cart',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                          ),
-                          style: TextButton.styleFrom(
-                            backgroundColor: Colors.white.withOpacity(0.2),
-                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppRadius.r12),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            )
-            .animate()
-            .slideY(begin: 0.5, end: 0, duration: 400.ms, curve: Curves.easeOutBack)
-            .fade(duration: 300.ms),
-        ],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _tabs,
       ),
-      
-      // Bottom Glassmorphic Navigation Bar
+
+      // Stack from bottom to top (inside this column):
+      //   BOTTOM NAVIGATION  ←  COMPACT GREEN CART BAR  ←  (body/content above)
+      // Wrapped in SafeArea so nothing sits under system gesture insets.
       bottomNavigationBar: Container(
-        height: kBottomNavigationBarHeight + 16,
         decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.85),
+          color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
           border: Border(
             top: BorderSide(
               color: Theme.of(context).brightness == Brightness.light
@@ -125,51 +195,73 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
             ),
           ),
         ),
-        child: ClipRRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: BottomNavigationBar(
-              currentIndex: _currentIndex,
-              onTap: (index) {
-                setState(() {
-                  _currentIndex = index;
-                });
-              },
-              backgroundColor: Colors.transparent,
-              type: BottomNavigationBarType.fixed,
-              selectedItemColor: Theme.of(context).colorScheme.primary,
-              unselectedItemColor: Colors.grey,
-              elevation: 0,
-              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-              unselectedLabelStyle: const TextStyle(fontSize: 11),
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  activeIcon: Icon(Icons.home_rounded),
-                  label: 'Home',
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (showCartBar)
+                CompactCartBar(
+                  key: const ValueKey('compact_cart_bar'),
+                  itemCount: cartState.itemCount,
+                  total: cartState.subtotal,
+                  onViewCart: () => context.push('/cart'),
+                ).animate().slideY(
+                      begin: 0.4,
+                      end: 0,
+                      duration: 300.ms,
+                      curve: Curves.easeOutCubic,
+                    ),
+              ClipRRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                  child: SizedBox(
+                    height: kBottomNavigationBarHeight + 16,
+                    child: BottomNavigationBar(
+                      currentIndex: _currentIndex,
+                      onTap: (index) {
+                        _onTabSelected(index);
+                      },
+                      backgroundColor: Colors.transparent,
+                      type: BottomNavigationBarType.fixed,
+                      selectedItemColor: Theme.of(context).colorScheme.primary,
+                      unselectedItemColor: Colors.grey,
+                      elevation: 0,
+                      selectedLabelStyle:
+                          const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+                      unselectedLabelStyle: const TextStyle(fontSize: 11),
+                      items: const [
+                        BottomNavigationBarItem(
+                          icon: Icon(Icons.home_outlined),
+                          activeIcon: Icon(Icons.home_rounded),
+                          label: 'Home',
+                        ),
+                        BottomNavigationBarItem(
+                          icon: Icon(Icons.restaurant_outlined),
+                          activeIcon: Icon(Icons.restaurant_rounded),
+                          label: 'Menu',
+                        ),
+                        BottomNavigationBarItem(
+                          icon: Icon(Icons.card_membership_outlined),
+                          activeIcon: Icon(Icons.card_membership_rounded),
+                          label: 'Subscription',
+                        ),
+                        BottomNavigationBarItem(
+                          icon: Icon(Icons.receipt_long_outlined),
+                          activeIcon: Icon(Icons.receipt_long_rounded),
+                          label: 'Orders',
+                        ),
+                        BottomNavigationBarItem(
+                          icon: Icon(Icons.person_outline_rounded),
+                          activeIcon: Icon(Icons.person_rounded),
+                          label: 'Profile',
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.restaurant_outlined),
-                  activeIcon: Icon(Icons.restaurant_rounded),
-                  label: 'Menu',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.card_membership_outlined),
-                  activeIcon: Icon(Icons.card_membership_rounded),
-                  label: 'Subscription',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.receipt_long_outlined),
-                  activeIcon: Icon(Icons.receipt_long_rounded),
-                  label: 'Orders',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline_rounded),
-                  activeIcon: Icon(Icons.person_rounded),
-                  label: 'Profile',
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

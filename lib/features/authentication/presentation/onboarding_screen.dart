@@ -92,7 +92,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 end: Alignment.bottomRight,
                               ),
                               shape: BoxShape.circle,
-                              boxShadow: AppShadows.premiumShadow(color: page.gradient.first.withOpacity(0.2)),
+                              boxShadow: AppShadows.premiumShadow(color: page.gradient.first.withValues(alpha: 0.2)),
                             ),
                             child: Icon(
                               page.icon,
@@ -153,7 +153,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         decoration: BoxDecoration(
                           color: isSelected
                               ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                              : Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(3),
                         ),
                       );
@@ -177,7 +177,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         color: Theme.of(context).colorScheme.primary,
                         shape: BoxShape.circle,
                         boxShadow: AppShadows.premiumShadow(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                         ),
                       ),
                       child: Icon(

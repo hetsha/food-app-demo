@@ -1,5 +1,5 @@
 class AppConstants {
-  static const String appName = 'Ambo';
+  static const String appName = 'Parabdi';
   
   // Storage Keys
   static const String keyUserLoggedIn = 'user_logged_in';
@@ -279,7 +279,7 @@ final List<SubscriptionPlan> mockSubscriptionPlans = [
     name: 'Weekly Plan (Lunch)',
     price: 1200.0,
     durationDays: 7,
-    description: 'Try the Ambo goodness for a week.',
+    description: 'Try the Parabdi goodness for a week.',
     benefits: ['7 Lunches', 'Free delivery', 'Customizable spice level', 'Skip anytime'],
     imageUrl: 'https://images.unsplash.com/photo-1506084868230-bb9d95c24759?auto=format&fit=crop&q=80&w=600',
   ),

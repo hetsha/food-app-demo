@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../authentication/presentation/auth_provider.dart';
+import '../../home/presentation/avatar_provider.dart';
+import '../../home/presentation/avatar_selector_sheet.dart';
 
 class ProfileTab extends ConsumerWidget {
   const ProfileTab({super.key});
@@ -24,9 +27,9 @@ class ProfileTab extends ConsumerWidget {
         padding: const EdgeInsets.only(left: 24, right: 24, bottom: 120),
         child: Column(
           children: [
-            _buildProfileCard(context, authState),
+            _buildProfileCard(context, ref, authState),
             const SizedBox(height: AppSpacing.s24),
-            _buildWalletCard(context),
+            _buildWalletCard(context, authState),
             const SizedBox(height: AppSpacing.s24),
             _buildSettingsList(context, ref, themeMode),
           ],
@@ -35,32 +38,56 @@ class ProfileTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfileCard(BuildContext context, AuthState state) {
+  Widget _buildProfileCard(BuildContext context, WidgetRef ref, AuthState state) {
+    final avatarId = ref.watch(avatarProvider);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.s20),
         child: Row(
           children: [
-            const CircleAvatar(
-              radius: 36,
-              backgroundImage: NetworkImage('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150'),
+            ClipOval(
+              child: SizedBox(
+                width: 72,
+                height: 72,
+                child: SvgPicture.asset(
+                  AvatarSelectorSheet.assetFor(avatarId),
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
-            const SizedBox(width: AppSpacing.s20),
+            const SizedBox(width: AppSpacing.s16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    state.userName ?? 'Rohan Patel',
+                    state.user?.fullName ?? 'Rohan Patel',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  const Text('+91 98765 43210', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  Text('+91 ${state.user?.phoneNumber ?? '9876543210'}', style: const TextStyle(color: Colors.grey, fontSize: 13)),
                   Text(
-                    state.userName != null && state.userName!.contains('Guest') ? 'Guest Account' : 'Gold Member',
+                    state.user?.role == 'guest' ? 'Guest Account' : 'Gold Member',
                     style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold, fontSize: 11),
                   ),
                 ],
+              ),
+            ),
+            IconButton(
+              tooltip: 'Edit Profile',
+              onPressed: () => context.push('/profile/edit'),
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.edit_rounded,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
           ],
@@ -69,12 +96,12 @@ class ProfileTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildWalletCard(BuildContext context) {
+  Widget _buildWalletCard(BuildContext context, AuthState authState) {
     return Card(
-      color: Theme.of(context).colorScheme.primary.withOpacity(0.06),
+      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.06),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.r20),
-        side: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.15)),
+        side: BorderSide(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.s20),
@@ -84,10 +111,10 @@ class ProfileTab extends ConsumerWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Ambo Cash Wallet', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                const Text('Parabdi Cash Wallet', style: TextStyle(fontSize: 12, color: Colors.grey)),
                 const SizedBox(height: 4),
                 Text(
-                  '₹120.00',
+                  '₹${(authState.user?.walletBalance ?? 0.0).toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                     fontWeight: FontWeight.w900,
                     color: Theme.of(context).colorScheme.primary,
@@ -130,7 +157,7 @@ class ProfileTab extends ConsumerWidget {
             leading: const Icon(Icons.location_on_outlined),
             title: const Text('Addresses Manager', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
             trailing: const Icon(Icons.arrow_forward_ios, size: 14),
-            onTap: () {},
+            onTap: () => context.push('/addresses'),
           ),
           const Divider(height: 1),
           
@@ -169,9 +196,9 @@ class ProfileTab extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.logout_rounded, color: Colors.red),
             title: const Text('Logout', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 14)),
-            onTap: () {
-              ref.read(authProvider.notifier).logout();
-              context.go('/auth');
+            onTap: () async {
+              await ref.read(authProvider.notifier).logout();
+              if (context.mounted) context.go('/auth');
             },
           ),
         ],

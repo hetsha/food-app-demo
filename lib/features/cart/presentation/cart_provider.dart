@@ -1,115 +1,195 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../domain/cart_item.dart';
-import '../../../core/constants/app_constants.dart';
+import '../../../../core/network/api_client.dart';
+import '../data/models/cart.dart';
+import '../data/repositories/cart_repository.dart';
+
+final cartRepositoryProvider = Provider<CartRepository>((ref) {
+  return CartRepository(ApiClient.instance);
+});
 
 class CartState {
-  final List<CartItem> items;
-  final String? appliedPromoCode;
-  final double discountPercent;
+  final Cart? cart;
+  final bool isLoading;
+  final String? error;
+  final bool isAdding;
+  final bool isUpdating;
+  final bool isRemoving;
+  final String? lastActionMessage;
 
   CartState({
-    required this.items,
-    this.appliedPromoCode,
-    this.discountPercent = 0.0,
+    this.cart,
+    this.isLoading = false,
+    this.error,
+    this.isAdding = false,
+    this.isUpdating = false,
+    this.isRemoving = false,
+    this.lastActionMessage,
   });
 
-  double get subtotal => items.fold(0, (sum, item) => sum + item.totalPrice);
-  double get deliveryFee => subtotal > 200 ? 0.0 : 30.0;
-  double get packagingCharge => items.isEmpty ? 0.0 : 10.0;
-  double get gstTax => subtotal * 0.05; // 5% GST
-  double get discountAmount => subtotal * (discountPercent / 100);
-  double get total => (subtotal + deliveryFee + packagingCharge + gstTax) - discountAmount;
-
   CartState copyWith({
-    List<CartItem>? items,
-    String? appliedPromoCode,
-    double? discountPercent,
+    Cart? cart,
+    bool? isLoading,
+    String? error,
+    bool? isAdding,
+    bool? isUpdating,
+    bool? isRemoving,
+    String? lastActionMessage,
+    bool clearError = false,
+    bool clearMessage = false,
   }) {
     return CartState(
-      items: items ?? this.items,
-      appliedPromoCode: appliedPromoCode ?? this.appliedPromoCode,
-      discountPercent: discountPercent ?? this.discountPercent,
+      cart: cart ?? this.cart,
+      isLoading: isLoading ?? this.isLoading,
+      error: clearError ? null : (error ?? this.error),
+      isAdding: isAdding ?? this.isAdding,
+      isUpdating: isUpdating ?? this.isUpdating,
+      isRemoving: isRemoving ?? this.isRemoving,
+      lastActionMessage: clearMessage ? null : (lastActionMessage ?? this.lastActionMessage),
     );
   }
+
+  int get itemCount => cart?.itemCount ?? 0;
+  double get itemTotal => cart?.itemTotal ?? 0.0;
+  double get subtotal => cart?.itemTotal ?? 0.0;
+  double get deliveryFee => itemTotal >= 200 ? 0.0 : 30.0;
+  double get platformFee => 2.0;
+  double get gstTax => itemTotal * 0.05;
+  double get grandTotal => itemTotal + deliveryFee + platformFee + gstTax;
+  List<CartItem> get items => cart?.items ?? [];
+  bool get isEmpty => items.isEmpty;
+  bool get hasUnavailableItems => cart?.hasUnavailableItems ?? false;
+  List<CartItem> get unavailableItems => cart?.unavailableItems ?? [];
+}
+
+String _errorMessage(Object e, String fallback) {
+  if (e is DioException) {
+    if (e.response?.statusCode == 401) {
+      return 'Please login to add items to your cart';
+    }
+    final data = e.response?.data;
+    if (data is Map) {
+      final error = data['error'];
+      if (error is Map && error['message'] != null) {
+        return error['message'].toString();
+      }
+      if (data['message'] != null) {
+        return data['message'].toString();
+      }
+    }
+    if (e.error is String && (e.error as String).isNotEmpty) {
+      return e.error as String;
+    }
+    if (e.message != null && e.message!.isNotEmpty) {
+      return e.message!;
+    }
+  }
+  final text = e.toString();
+  if (text.isNotEmpty && text != 'null') {
+    return text;
+  }
+  return fallback;
 }
 
 class CartNotifier extends StateNotifier<CartState> {
-  CartNotifier() : super(CartState(items: []));
+  final CartRepository _repo;
 
-  void addItem(Meal meal, {
-    String spiceLevel = 'Medium',
-    String oilLevel = 'Normal',
-    String portionSize = 'Normal',
-    List<String> removedIngredients = const [],
-    List<String> addedExtras = const [],
-    int quantity = 1,
-  }) {
-    // Generate a unique ID based on customization to distinguish between customized orders of the same meal
-    final customId = '${meal.id}_${spiceLevel}_${oilLevel}_${portionSize}_${removedIngredients.join(",")}_${addedExtras.join(",")}';
+  CartNotifier(this._repo) : super(CartState());
 
-    final existingIndex = state.items.indexWhere((item) => item.id == customId);
-    if (existingIndex >= 0) {
-      final updatedItems = List<CartItem>.from(state.items);
-      final currentItem = updatedItems[existingIndex];
-      updatedItems[existingIndex] = currentItem.copyWith(
-        quantity: currentItem.quantity + quantity,
-      );
-      state = state.copyWith(items: updatedItems);
-    } else {
+  Future<void> loadCart() async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final cart = await _repo.getCart();
+      state = state.copyWith(cart: cart, isLoading: false);
+    } catch (e) {
       state = state.copyWith(
-        items: [
-          ...state.items,
-          CartItem(
-            id: customId,
-            meal: meal,
-            quantity: quantity,
-            spiceLevel: spiceLevel,
-            oilLevel: oilLevel,
-            portionSize: portionSize,
-            removedIngredients: removedIngredients,
-            addedExtras: addedExtras,
-          ),
-        ],
+        isLoading: false,
+        error: _errorMessage(e, 'Failed to load cart'),
       );
     }
   }
 
-  void updateQuantity(String id, int newQty) {
-    if (newQty <= 0) {
-      removeItem(id);
-      return;
+  Future<void> addItem({
+    required String foodItemId,
+    required int quantity,
+    List<Map<String, dynamic>>? customizationItems,
+    String? specialInstructions,
+  }) async {
+    state = state.copyWith(isAdding: true, clearError: true, clearMessage: true);
+    try {
+      await _repo.addItem(
+        foodItemId: foodItemId,
+        quantity: quantity,
+        customizationItems: customizationItems,
+        specialInstructions: specialInstructions,
+      );
+      await loadCart();
+      // The item WAS saved — never surface a stale error for a successful add.
+      state = state.copyWith(
+        isAdding: false,
+        clearError: true,
+        lastActionMessage: 'Item added to cart',
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isAdding: false,
+        error: _errorMessage(e, 'Failed to add item'),
+      );
     }
-    state = state.copyWith(
-      items: state.items.map((item) => item.id == id ? item.copyWith(quantity: newQty) : item).toList(),
-    );
   }
 
-  void removeItem(String id) {
-    state = state.copyWith(
-      items: state.items.where((item) => item.id != id).toList(),
-    );
-  }
-
-  bool applyPromoCode(String code) {
-    if (code.toUpperCase() == 'HEALTH20') {
-      state = state.copyWith(appliedPromoCode: 'HEALTH20', discountPercent: 20);
-      return true;
-    } else if (code.toUpperCase() == 'CHEF100') {
-      state = state.copyWith(appliedPromoCode: 'CHEF100', discountPercent: 15);
-      return true;
+  Future<void> updateQuantity(String itemId, int quantity) async {
+    state = state.copyWith(isUpdating: true, clearError: true);
+    try {
+      await _repo.updateItem(itemId, quantity);
+      await loadCart();
+      state = state.copyWith(isUpdating: false);
+    } catch (e) {
+      state = state.copyWith(
+        isUpdating: false,
+        error: _errorMessage(e, 'Failed to update quantity'),
+      );
     }
-    return false;
   }
 
-  void removePromoCode() {
-    state = state.copyWith(appliedPromoCode: null, discountPercent: 0.0);
+  Future<void> removeItem(String itemId) async {
+    state = state.copyWith(isRemoving: true, clearError: true);
+    try {
+      await _repo.removeItem(itemId);
+      await loadCart();
+      state = state.copyWith(isRemoving: false, lastActionMessage: 'Item removed');
+    } catch (e) {
+      state = state.copyWith(
+        isRemoving: false,
+        error: _errorMessage(e, 'Failed to remove item'),
+      );
+    }
   }
 
-  void clearCart() {
-    state = CartState(items: []);
+  Future<void> clearCart() async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      await _repo.clearCart();
+      await loadCart();
+      state = state.copyWith(lastActionMessage: 'Cart cleared');
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _errorMessage(e, 'Failed to clear cart'),
+      );
+    }
+  }
+
+  void clearMessage() {
+    state = state.copyWith(clearMessage: true);
+  }
+
+  void clearError() {
+    state = state.copyWith(clearError: true);
   }
 }
 
 final cartProvider = StateNotifierProvider<CartNotifier, CartState>((ref) {
-  return CartNotifier();
+  final repo = ref.read(cartRepositoryProvider);
+  return CartNotifier(repo);
 });

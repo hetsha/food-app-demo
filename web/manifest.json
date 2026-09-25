@@ -1,11 +1,11 @@
 {
-    "name": "Ambo",
-    "short_name": "Ambo",
+    "name": "Parabdi",
+    "short_name": "Parabdi",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Parabdi – Gujarati Cloud Kitchen Food Ordering Application",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
