@@ -144,7 +144,7 @@ $desiredApiEnv = @"
 class ApiEnv {
   ApiEnv._();
 
-  static const String host = '$lanIp';
+  static const String host = String.fromEnvironment('API_HOST', defaultValue: '$lanIp');
 }
 "@
 $currentApiEnv = if (Test-Path $ApiEnvFile) { Get-Content $ApiEnvFile -Raw } else { '' }

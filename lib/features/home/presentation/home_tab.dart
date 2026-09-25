@@ -60,14 +60,18 @@ class _HomeTabState extends ConsumerState<HomeTab> {
               children: [
                 _buildHeader(context, cartCount: cartCount),
                 _buildSearchBar(context),
-                if (homeState.isLoading)
-                  _buildLoadingShimmer(context)
-                else ...[
-                  _buildOfferCarousel(context, homeState),
-                  _buildCategories(context, homeState),
-                  _buildChefSpecials(context, homeState),
-                  _buildHealthyPicks(context, homeState),
-                ],
+                _buildOfferCarousel(context, homeState),
+                if (homeState.bannersLoading && homeState.banners.isEmpty) _buildSectionLoading(context),
+                if (homeState.bannersError && homeState.banners.isEmpty) _buildSectionError(context, 'Banners unavailable'),
+                _buildCategories(context, homeState),
+                if (homeState.categoriesLoading && homeState.categories.isEmpty) _buildSectionLoading(context),
+                if (homeState.categoriesError && homeState.categories.isEmpty) _buildSectionError(context, 'Categories unavailable'),
+                _buildChefSpecials(context, homeState),
+                if (homeState.bestsellersLoading && homeState.bestsellers.isEmpty) _buildSectionLoading(context),
+                if (homeState.bestsellersError && homeState.bestsellers.isEmpty) _buildSectionError(context, 'Chef specials unavailable'),
+                _buildHealthyPicks(context, homeState),
+                if (homeState.healthyPicksLoading && homeState.healthyPicks.isEmpty) _buildSectionLoading(context),
+                if (homeState.healthyPicksError && homeState.healthyPicks.isEmpty) _buildSectionError(context, 'Healthy picks unavailable'),
                 _buildSubscriptionBanner(context),
               ],
             ),
@@ -706,6 +710,36 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             child: const Text('View Plans', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSectionLoading(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24, vertical: AppSpacing.s8),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Container(
+          height: 20,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppRadius.r12),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionError(BuildContext context, String message) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24, vertical: AppSpacing.s8),
+      child: Center(
+        child: Text(
+          message,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+        ),
       ),
     );
   }

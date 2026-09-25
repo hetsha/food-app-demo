@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../constants/api_constants.dart';
 import '../storage/local_storage.dart';
 import 'api_client.dart';
@@ -90,16 +91,32 @@ class AuthInterceptor extends Interceptor {
 class LoggingInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    if (kDebugMode) {
+      debugPrint('[API] ${options.method} ${options.path}');
+      debugPrint('[API] Base URL: ${ApiConstants.baseUrl}');
+      if (options.queryParameters.isNotEmpty) {
+        debugPrint('[API] Query: ${options.queryParameters}');
+      }
+    }
     handler.next(options);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
+    if (kDebugMode) {
+      debugPrint('[API] ${response.statusCode} ${response.requestOptions.path}');
+    }
     handler.next(response);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
+    if (kDebugMode) {
+      debugPrint('[API] ERROR ${err.requestOptions.method} ${err.requestOptions.path}');
+      debugPrint('[API] Status: ${err.response?.statusCode}');
+      debugPrint('[API] Type: ${err.type}');
+      debugPrint('[API] Message: ${err.message}');
+    }
     handler.next(err);
   }
 }

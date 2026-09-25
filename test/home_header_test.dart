@@ -49,10 +49,10 @@ class FakeHomeRepository extends HomeRepository {
   FakeHomeRepository() : super(Dio());
 
   @override
-  Future<List<BannerItem>> getBanners() async => [];
+  Future<List<BannerItem>> getBanners({int timeoutSeconds = 8, int maxRetries = 1}) async => [];
 
   @override
-  Future<List<HomeCategory>> getCategories() async => [];
+  Future<List<HomeCategory>> getCategories({int timeoutSeconds = 8, int maxRetries = 1}) async => [];
 
   @override
   Future<List<HomeFood>> getFoods({
@@ -61,6 +61,8 @@ class FakeHomeRepository extends HomeRepository {
     bool? isVeg,
     bool? isHealthyPick,
     int? limit,
+    int timeoutSeconds = 8,
+    int maxRetries = 1,
   }) async =>
       [];
 }

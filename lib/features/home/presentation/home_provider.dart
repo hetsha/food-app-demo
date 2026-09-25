@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../data/models/home_data.dart';
@@ -16,6 +15,14 @@ class HomeState {
   final List<HomeCategory> categories;
   final List<HomeFood> bestsellers;
   final List<HomeFood> healthyPicks;
+  final bool bannersError;
+  final bool categoriesError;
+  final bool bestsellersError;
+  final bool healthyPicksError;
+  final bool bannersLoading;
+  final bool categoriesLoading;
+  final bool bestsellersLoading;
+  final bool healthyPicksLoading;
 
   HomeState({
     this.isLoading = false,
@@ -24,6 +31,14 @@ class HomeState {
     this.categories = const [],
     this.bestsellers = const [],
     this.healthyPicks = const [],
+    this.bannersError = false,
+    this.categoriesError = false,
+    this.bestsellersError = false,
+    this.healthyPicksError = false,
+    this.bannersLoading = false,
+    this.categoriesLoading = false,
+    this.bestsellersLoading = false,
+    this.healthyPicksLoading = false,
   });
 
   HomeState copyWith({
@@ -33,6 +48,14 @@ class HomeState {
     List<HomeCategory>? categories,
     List<HomeFood>? bestsellers,
     List<HomeFood>? healthyPicks,
+    bool? bannersError,
+    bool? categoriesError,
+    bool? bestsellersError,
+    bool? healthyPicksError,
+    bool? bannersLoading,
+    bool? categoriesLoading,
+    bool? bestsellersLoading,
+    bool? healthyPicksLoading,
   }) {
     return HomeState(
       isLoading: isLoading ?? this.isLoading,
@@ -41,6 +64,14 @@ class HomeState {
       categories: categories ?? this.categories,
       bestsellers: bestsellers ?? this.bestsellers,
       healthyPicks: healthyPicks ?? this.healthyPicks,
+      bannersError: bannersError ?? this.bannersError,
+      categoriesError: categoriesError ?? this.categoriesError,
+      bestsellersError: bestsellersError ?? this.bestsellersError,
+      healthyPicksError: healthyPicksError ?? this.healthyPicksError,
+      bannersLoading: bannersLoading ?? this.bannersLoading,
+      categoriesLoading: categoriesLoading ?? this.categoriesLoading,
+      bestsellersLoading: bestsellersLoading ?? this.bestsellersLoading,
+      healthyPicksLoading: healthyPicksLoading ?? this.healthyPicksLoading,
     );
   }
 }
@@ -54,55 +85,63 @@ class HomeNotifier extends StateNotifier<HomeState> {
 
   Future<void> loadHomeData() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-    try {
-      final results = await Future.wait([
-        _repo.getBanners().catchError((e) {
-          debugPrint('Error fetching banners: $e');
-          return <BannerItem>[];
-        }),
-        _repo.getCategories().catchError((e) {
-          debugPrint('Error fetching categories: $e');
-          return <HomeCategory>[];
-        }),
-        _repo.getFoods(isBestseller: true, limit: 10).catchError((e) {
-          debugPrint('Error fetching bestsellers: $e');
-          return <HomeFood>[];
-        }),
-        _repo.getFoods(isHealthyPick: true, limit: 10).catchError((e) {
-          debugPrint('Error fetching healthy picks: $e');
-          return <HomeFood>[];
-        }),
-      ]);
+    await _loadSection(
+      () => _repo.getBanners(),
+      setLoading: () => state.copyWith(bannersLoading: true),
+      setData: (List<dynamic> data) => state.copyWith(banners: data.cast<BannerItem>(), bannersLoading: false, bannersError: false),
+      setError: () => state.copyWith(bannersLoading: false, bannersError: true),
+    );
+    await _loadSection(
+      () => _repo.getCategories(),
+      setLoading: () => state.copyWith(categoriesLoading: true),
+      setData: (List<dynamic> data) => state.copyWith(categories: data.cast<HomeCategory>(), categoriesLoading: false, categoriesError: false),
+      setError: () => state.copyWith(categoriesLoading: false, categoriesError: true),
+    );
+    await _loadSection(
+      () => _repo.getFoods(isBestseller: true, limit: 10),
+      setLoading: () => state.copyWith(bestsellersLoading: true),
+      setData: (List<dynamic> data) => state.copyWith(bestsellers: data.cast<HomeFood>(), bestsellersLoading: false, bestsellersError: false),
+      setError: () => state.copyWith(bestsellersLoading: false, bestsellersError: true),
+    );
+    await _loadSection(
+      () => _repo.getFoods(isHealthyPick: true, limit: 10),
+      setLoading: () => state.copyWith(healthyPicksLoading: true),
+      setData: (List<dynamic> data) => state.copyWith(healthyPicks: data.cast<HomeFood>(), healthyPicksLoading: false, healthyPicksError: false),
+      setError: () => state.copyWith(healthyPicksLoading: false, healthyPicksError: true),
+    );
+    state = state.copyWith(isLoading: false);
+  }
 
-      state = state.copyWith(
-        isLoading: false,
-        banners: results[0] as List<BannerItem>,
-        categories: results[1] as List<HomeCategory>,
-        bestsellers: results[2] as List<HomeFood>,
-        healthyPicks: results[3] as List<HomeFood>,
-      );
+  Future<void> _loadSection(
+    Future<List<dynamic>> Function() request, {
+    required HomeState Function() setLoading,
+    required HomeState Function(List<dynamic> data) setData,
+    required HomeState Function() setError,
+  }) async {
+    state = setLoading();
+    if (kDebugMode) debugPrint('[HomeNotifier] loading section');
+    try {
+      final data = await request();
+      state = setData(data);
     } catch (e) {
-      final message = e is DioException ? _extractError(e) : 'Something went wrong. Please try again.';
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: message,
-      );
+      if (kDebugMode) debugPrint('[HomeNotifier] section error: $e');
+      state = setError();
     }
   }
 
-  Future<void> refresh() async => loadHomeData();
-
-  String _extractError(DioException e) {
-    if (e.response?.data is Map<String, dynamic>) {
-      final data = e.response!.data;
-      if (data['error'] is Map && data['error']['message'] != null) {
-        return data['error']['message'].toString();
-      }
-      if (data['message'] != null) {
-        return data['message'].toString();
-      }
-    }
-    return e.error?.toString() ?? 'Something went wrong';
+  Future<void> refresh() async {
+    state = state.copyWith(
+      isLoading: true,
+      bannersLoading: true,
+      categoriesLoading: true,
+      bestsellersLoading: true,
+      healthyPicksLoading: true,
+      bannersError: false,
+      categoriesError: false,
+      bestsellersError: false,
+      healthyPicksError: false,
+    );
+    await loadHomeData();
   }
 }
 
